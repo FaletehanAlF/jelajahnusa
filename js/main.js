@@ -277,11 +277,16 @@
 })();
 
 // ---------- Animasi masuk viewport (penyempurnaan visual) ----------
-// Berjalan setelah semua kartu dirender. Keamanan:
-// 1. Kalau pengguna mengurangi animasi, fungsi langsung berhenti.
-// 2. Kalau IntersectionObserver tidak ada, fungsi berhenti SEBELUM class
-//    "reveal" dipasang, jadi isi halaman tidak pernah disembunyikan.
-// 3. Kalau ada error, semua class dibersihkan kembali sehingga konten tampil.
+// Berjalan setelah semua kartu dirender.
+// Keamanan (konten tidak boleh tersembunyi permanen):
+// 1. Kalau pengguna mengurangi animasi, fungsi berhenti sebelum apa pun
+//    disembunyikan.
+// 2. Kalau IntersectionObserver tidak ada, fungsi juga berhenti.
+// 3. Class "reveal" hanya dipasang setelah semua pemeriksaan lolos, dan
+//    dilepas lagi kalau terjadi error.
+// 4. Scroll mendadak (lompat anchor, tombol "End", atau posisi scroll yang
+//    dipulihkan browser) dapat membuat elemen terlewat tanpa pernah
+//    berpotongan dengan viewport. Karena itu ada penyapuan saat event scroll.
 function initRevealOnScroll() {
   var reduceMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -297,26 +302,56 @@ function initRevealOnScroll() {
   );
   if (targets.length === 0) return;
 
+  var pending = [];
+  var observer = null;
+
+  // Munculkan elemen yang sudah berada di dalam atau di atas viewport.
+  function sweep() {
+    var viewBottom = window.innerHeight;
+    var stillHidden = [];
+    for (var i = 0; i < pending.length; i++) {
+      if (pending[i].getBoundingClientRect().top < viewBottom) {
+        pending[i].classList.add("is-visible");
+        if (observer) observer.unobserve(pending[i]);
+      } else {
+        stillHidden.push(pending[i]);
+      }
+    }
+    pending = stillHidden;
+    if (pending.length === 0) {
+      window.removeEventListener("scroll", sweep);
+      window.removeEventListener("pageshow", sweep);
+    }
+  }
+
   try {
     document.documentElement.classList.add("has-js-reveal");
     targets.forEach(function (element) {
       element.classList.add("reveal");
     });
+    pending = targets.slice();
 
-    var observer = new IntersectionObserver(
+    observer = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
           entry.target.classList.add("is-visible");
           observer.unobserve(entry.target); // hanya sekali per elemen
+          pending = pending.filter(function (element) {
+            return element !== entry.target;
+          });
         });
       },
       { threshold: 0.08, rootMargin: "0px 0px -5% 0px" }
     );
 
-    targets.forEach(function (element) {
+    pending.forEach(function (element) {
       observer.observe(element);
     });
+
+    window.addEventListener("scroll", sweep, { passive: true });
+    window.addEventListener("pageshow", sweep);
+    sweep(); // posisi awal dan posisi scroll yang dipulihkan browser
   } catch (error) {
     document.documentElement.classList.remove("has-js-reveal");
     targets.forEach(function (element) {

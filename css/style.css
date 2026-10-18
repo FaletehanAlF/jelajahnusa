@@ -230,6 +230,20 @@ main section {
   background-color: var(--color-tint);
 }
 
+/* Latar tipis di atas navbar kapsul agar konten yang lewat tidak terlihat
+   menembus celah. `position: fixed` + `right: 0` mengikuti lebar viewport
+   tanpa memunculkan scrollbar horizontal. */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--space-2);
+  z-index: 49;
+  background-color: var(--color-bg);
+}
+
 
 /* ==========================================================================
    5. FOCUS STATE & SKIP LINK
