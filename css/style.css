@@ -1,13 +1,15 @@
 /* ==========================================================================
    JelajahNusa — css/style.css
-   TAHAP 4B: penyempurnaan visual UI (white + green, Montserrat, navbar kapsul,
-   animasi masuk viewport).
+   Penyempurnaan visual: ikon SVG, micro-interaction, animasi scroll.
+   (dibangun di atas Tahap 4B: white + green, Montserrat, navbar kapsul)
 
    Arah desain: editorial travel yang bersih dan manusiawi.
    - Hanya putih dan hijau (berbagai nada) sebagai warna.
    - Montserrat dipakai konsisten untuk heading, navigasi, tombol, dan isi.
    - Radius kartu sengaja kecil (8px); bentuk kapsul hanya untuk navbar,
-     tombol, dan chip filter.
+     tombol, chip filter, dan tautan navigasi.
+   - Ikon memakai satu sistem (lihat bagian 6): viewBox 24x24, outline,
+     stroke 1.8, `currentColor`, ukuran dari token --icon-size.
    - Tanpa gradient, glow, glassmorphism, tilt, atau parallax.
 
    Kontrak dengan JavaScript (nama TIDAK boleh berubah):
@@ -15,6 +17,8 @@
    .badge, .card-location, .card-description, .card-link, .card-grid,
    .category-list, .filter-list, .search-form, .result-count, .empty-state,
    .info-note, .gallery, .not-found, dan atribut [hidden].
+   Class tambahan dari JavaScript: .reveal / .is-visible pada <html
+   class="has-js-reveal">, serta elemen .icon hasil buildIcon().
    ========================================================================== */
 
 
@@ -73,6 +77,10 @@
   --radius-lg: 14px;
   --radius-pill: 999px;
 
+  /* Ikon: satu sistem untuk seluruh situs (dua ukuran + penanda merek) */
+  --icon-size: 18px;
+  --icon-size-sm: 15px;
+
   /* Bayangan sangat halus */
   --shadow-sm: 0 1px 2px rgba(20, 53, 46, 0.05);
   --shadow-md: 0 6px 20px rgba(20, 53, 46, 0.07);
@@ -80,6 +88,8 @@
 
   /* Transisi singkat */
   --transition: 180ms ease;
+  --transition-slow: 260ms ease;
+  --reveal-duration: 480ms;
   --reveal-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -129,11 +139,26 @@ a {
   color: var(--color-primary);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  transition: color var(--transition);
+  transition: color var(--transition), text-decoration-color var(--transition);
 }
 
 a:hover {
   color: var(--color-primary-deep);
+}
+
+/* Tautan yang mengandalkan hover memakai garis bawah transparan supaya
+   muncul dengan halus tanpa menggeser tata letak. */
+.card-link,
+.back-link a,
+.footer-nav a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+}
+
+.card-link:hover,
+.back-link a:hover,
+.footer-nav a:hover {
+  text-decoration-color: currentColor;
 }
 
 p:last-child {
@@ -269,11 +294,11 @@ body::before {
   color: var(--color-ink-invert);
 }
 
-/* Hanya fokus keyboard yang diberi indikator (outline tidak pernah dihapus). */
+/* Hanya fokus keyboard yang diberi indikator (outline tidak pernah dihapus).
+   Radius outline mengikuti bentuk elemennya sendiri, jadi kapsul tetap kapsul. */
 :focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 3px;
-  border-radius: 2px;
 }
 
 /* Di atas latar hijau tua, outline memakai hijau muda (6.47:1). */
@@ -284,8 +309,43 @@ body::before {
 
 
 /* ==========================================================================
-   6. KOMPONEN: TOMBOL
+   6. KOMPONEN: IKON SVG & TOMBOL
    ========================================================================== */
+
+/* Satu sistem ikon: viewBox 24x24, garis outline tanpa isian, ujung membulat,
+   warna diambil dari `currentColor` sehingga otomatis mengikuti state
+   hover/focus elemen induknya. Ukuran hanya dua nilai + satu ukuran merek. */
+.icon {
+  flex: none;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Penanda merek sedikit lebih besar agar seimbang dengan teks logo. */
+.site-logo .icon {
+  width: 21px;
+  height: 21px;
+}
+
+/* Ikon kecil di dalam kartu mengikuti ukuran teks sekitarnya. */
+.card-location .icon,
+.card-link .icon {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+/* Ikon lokasi mengalir bersama teks supaya tetap rapi saat teks membungkus. */
+.card-location .icon,
+.destination-location .icon {
+  display: inline-block;
+  vertical-align: -0.22em;
+  margin-right: 0.45em;
+}
 
 .btn {
   display: inline-flex;
@@ -304,6 +364,7 @@ body::before {
   text-align: center;
   text-decoration: none;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition: background-color var(--transition), color var(--transition),
     border-color var(--transition);
 }
@@ -320,6 +381,11 @@ body::before {
   color: var(--color-ink-invert);
 }
 
+.btn-primary:active {
+  background-color: var(--color-primary-deep);
+  border-color: var(--color-primary-deep);
+}
+
 .btn-secondary {
   background-color: transparent;
   border-color: var(--color-primary);
@@ -328,6 +394,12 @@ body::before {
 
 .btn-secondary:hover {
   background-color: var(--color-primary);
+  color: var(--color-ink-invert);
+}
+
+.btn-secondary:active {
+  background-color: var(--color-primary-deep);
+  border-color: var(--color-primary-deep);
   color: var(--color-ink-invert);
 }
 
@@ -351,7 +423,7 @@ body::before {
   min-height: var(--header-height);
   /* Mengambang: jarak dari tepi layar, sejajar dengan konten halaman. */
   margin-inline: max(var(--gutter), calc((100% - var(--content-max)) / 2));
-  padding-inline: var(--space-3) var(--space-2);
+  padding-inline: var(--space-2);
   background-color: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
@@ -363,24 +435,33 @@ body::before {
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  padding-left: var(--space-3);
+  padding-inline: var(--space-2);
   font-family: var(--font-sans);
   font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  white-space: nowrap;
   color: var(--color-primary);
   text-decoration: none;
   transition: color var(--transition);
 }
 
-.site-logo:hover {
+.site-logo .icon {
   color: var(--color-accent);
+  transition: color var(--transition);
+}
+
+.site-logo:hover .icon {
+  color: var(--color-primary);
 }
 
 /* Tombol buka/tutup menu (mobile). */
 .menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   min-height: 44px;
-  padding: var(--space-2) var(--space-5);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
   background-color: var(--color-surface);
@@ -389,7 +470,9 @@ body::before {
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  white-space: nowrap;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition: background-color var(--transition), color var(--transition),
     border-color var(--transition);
 }
@@ -399,10 +482,27 @@ body::before {
   color: var(--color-accent);
 }
 
+.menu-toggle:active {
+  background-color: var(--color-secondary-soft);
+}
+
+/* Ikon bertukar mengikuti state; ukurannya sama sehingga tidak ada pergeseran. */
+.menu-toggle .icon--close {
+  display: none;
+}
+
 .menu-toggle[aria-expanded="true"] {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-ink-invert);
+}
+
+.menu-toggle[aria-expanded="true"] .icon--menu {
+  display: none;
+}
+
+.menu-toggle[aria-expanded="true"] .icon--close {
+  display: block;
 }
 
 .site-nav {
@@ -411,7 +511,9 @@ body::before {
   gap: var(--space-2);
 }
 
-/* Panel menu mobile: disembunyikan default, dibuka class dari JavaScript. */
+/* Panel menu mobile: disembunyikan default, dibuka class dari JavaScript.
+   Muncul dengan animasi ringan; `display` tetap diatur supaya keyboard dan
+   pembaca layar tidak pernah menjumpai tautan yang tidak terlihat. */
 .site-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -431,6 +533,18 @@ body::before {
 
 .site-menu--open {
   display: flex;
+  animation: menu-in 200ms var(--reveal-ease) both;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .site-menu a {
@@ -438,18 +552,23 @@ body::before {
   align-items: center;
   min-height: 44px;
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-pill);
   font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-primary);
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
   transition: background-color var(--transition), color var(--transition);
 }
 
 .site-menu a:hover {
   background-color: var(--color-secondary-soft);
   color: var(--color-accent);
+}
+
+.site-menu a:active {
+  background-color: var(--color-accent-soft);
 }
 
 
@@ -521,12 +640,6 @@ body::before {
     transform var(--transition);
 }
 
-.destination-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-md);
-}
-
 .card-image {
   width: 100%;
   height: auto;
@@ -535,6 +648,22 @@ body::before {
   background-color: var(--color-secondary-soft);
   color: var(--color-ink-muted);
   font-size: 0.8125rem;
+  transition: transform var(--transition-slow);
+}
+
+/* Efek hover hanya untuk perangkat berpenunjuk presisi, supaya di layar
+   sentuh tidak ada state hover yang "menempel" setelah kartu disentuh.
+   Hanya `transform` + warna: tidak ada pergeseran tata letak. */
+@media (hover: hover) {
+  .destination-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .destination-card:hover .card-image {
+    transform: scale(1.04);
+  }
 }
 
 .badge {
@@ -592,21 +721,23 @@ body::before {
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  text-decoration: none;
   color: var(--color-accent);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.card-link::after {
-  content: "\2192";
-  transition: transform var(--transition);
+.card-link .icon {
+  transition: transform var(--transition-slow);
 }
 
 .card-link:hover {
   color: var(--color-primary);
-  text-decoration: underline;
 }
 
-.card-link:hover::after {
+.card-link:hover .icon {
+  transform: translateX(3px);
+}
+
+.card-link:focus-visible .icon {
   transform: translateX(3px);
 }
 
@@ -641,15 +772,14 @@ body::before {
   font-weight: 600;
   text-align: left;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition: background-color var(--transition), border-color var(--transition),
     color var(--transition);
 }
 
-.category-list button::after {
-  content: "\2192";
-  font-size: 1rem;
+.category-list button .icon {
   color: var(--color-accent);
-  transition: transform var(--transition);
+  transition: transform var(--transition-slow), color var(--transition);
 }
 
 .category-list button:hover {
@@ -658,9 +788,14 @@ body::before {
   color: var(--color-ink-invert);
 }
 
-.category-list button:hover::after {
+.category-list button:hover .icon {
   transform: translateX(3px);
   color: var(--color-ink-invert);
+}
+
+.category-list button:active {
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary-soft);
 }
 
 /* Status aktif ditandai warna + bobot + garis (bukan hanya warna). */
@@ -672,8 +807,12 @@ body::before {
   box-shadow: inset 0 0 0 2px var(--color-accent);
 }
 
-.category-list button[aria-pressed="true"]::after {
+.category-list button[aria-pressed="true"] .icon {
   color: var(--color-ink-invert);
+}
+
+.category-list button[aria-pressed="true"]:active {
+  background-color: var(--color-primary-soft);
 }
 
 
@@ -720,6 +859,34 @@ body::before {
   border-color: var(--color-accent);
 }
 
+/* Bungkus input + ikon pencarian (ikon dekoratif, tidak menangkap klik). */
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-field .icon {
+  position: absolute;
+  left: var(--space-4);
+  color: var(--color-ink-muted);
+  pointer-events: none;
+  transition: color var(--transition);
+}
+
+.search-field:focus-within .icon {
+  color: var(--color-accent);
+}
+
+.search-field input {
+  /* Ruang kiri untuk ikon pencarian. */
+  padding-left: calc(var(--space-4) + var(--icon-size) + var(--space-3));
+}
+
+.search-field input:focus {
+  border-color: var(--color-accent);
+}
+
 .filter-list {
   display: flex;
   flex-wrap: wrap;
@@ -740,6 +907,7 @@ body::before {
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition: background-color var(--transition), border-color var(--transition),
     color var(--transition);
 }
@@ -748,6 +916,10 @@ body::before {
   background-color: var(--color-secondary-soft);
   border-color: var(--color-accent);
   color: var(--color-accent);
+}
+
+.filter-list button:active {
+  background-color: var(--color-accent-soft);
 }
 
 .filter-list button.is-active,
@@ -892,12 +1064,11 @@ body::before {
   min-height: 44px;
   color: var(--color-ink-invert);
   font-weight: 600;
-  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .footer-nav a:hover {
   color: var(--color-focus-on-dark);
-  text-decoration: underline;
 }
 
 
@@ -955,8 +1126,18 @@ body::before {
 
 .overview h3,
 .travel-info h3 {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
   margin: var(--space-6) 0 var(--space-3);
   font-size: 1.0625rem;
+}
+
+/* Ikon sejajar dengan baris pertama judul, juga ketika judul membungkus. */
+.overview h3 .icon,
+.travel-info h3 .icon {
+  margin-top: 0.12em;
+  color: var(--color-accent);
 }
 
 #destination-description {
@@ -1000,6 +1181,7 @@ body::before {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
+  transition: border-color var(--transition);
 }
 
 .gallery img {
@@ -1010,6 +1192,17 @@ body::before {
   background-color: var(--color-secondary-soft);
   color: var(--color-ink-muted);
   font-size: 0.8125rem;
+  transition: transform var(--transition-slow);
+}
+
+@media (hover: hover) {
+  .gallery figure:hover {
+    border-color: var(--color-border-strong);
+  }
+
+  .gallery figure:hover img {
+    transform: scale(1.03);
+  }
 }
 
 .gallery figcaption {
@@ -1039,20 +1232,19 @@ body::before {
   gap: var(--space-2);
   min-height: 44px;
   font-weight: 700;
-  text-decoration: none;
+  color: var(--color-primary);
 }
 
-.back-link a::before {
-  content: "\2190";
-  transition: transform var(--transition);
+.back-link a .icon {
+  transition: transform var(--transition-slow);
 }
 
 .back-link a:hover {
-  text-decoration: underline;
   color: var(--color-accent);
 }
 
-.back-link a:hover::before {
+.back-link a:hover .icon,
+.back-link a:focus-visible .icon {
   transform: translateX(-3px);
 }
 
@@ -1081,33 +1273,51 @@ body::before {
 
 .reveal {
   --reveal-delay: 0ms;
-  transition: opacity 620ms var(--reveal-ease), transform 620ms var(--reveal-ease);
-  transition-delay: var(--reveal-delay);
 }
 
+/* Elemen disembunyikan HANYA setelah JavaScript memasang `has-js-reveal` pada
+   <html>, jadi tanpa JavaScript (atau tanpa IntersectionObserver) konten tetap
+   terlihat. */
 .has-js-reveal .reveal {
   opacity: 0;
-  transform: translateY(20px);
+  translate: 0 14px;
 }
 
+/* Masuk viewport dianimasikan (bukan transisi) supaya properti `transition`
+   dan `transform` milik komponen (mis. kartu yang terangkat saat hover) tidak
+   pernah tertimpa oleh sistem reveal ini. */
 .has-js-reveal .reveal.is-visible {
   opacity: 1;
-  transform: none;
+  animation: reveal-in var(--reveal-duration) var(--reveal-ease) both;
+  animation-delay: var(--reveal-delay);
 }
 
-/* Stagger ringan antar kartu / item tips (maksimal 6 langkah). */
-.card-grid > .reveal:nth-child(1),
-.tips-list > .reveal:nth-child(1) { --reveal-delay: 0ms; }
-.card-grid > .reveal:nth-child(2),
-.tips-list > .reveal:nth-child(2) { --reveal-delay: 70ms; }
-.card-grid > .reveal:nth-child(3),
-.tips-list > .reveal:nth-child(3) { --reveal-delay: 140ms; }
-.card-grid > .reveal:nth-child(4),
-.tips-list > .reveal:nth-child(4) { --reveal-delay: 210ms; }
-.card-grid > .reveal:nth-child(5),
-.tips-list > .reveal:nth-child(5) { --reveal-delay: 280ms; }
-.card-grid > .reveal:nth-child(6),
-.tips-list > .reveal:nth-child(6) { --reveal-delay: 350ms; }
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+/* Stagger ringan mengikuti kolom grid (maksimal 3 langkah, 60ms per langkah)
+   supaya tidak ada elemen yang terasa menunggu terlalu lama. */
+.card-grid > .reveal:nth-child(3n + 2),
+.gallery > .reveal:nth-child(3n + 2),
+.category-list > .reveal:nth-child(3n + 2),
+.tips-list > .reveal:nth-child(3n + 2) {
+  --reveal-delay: 60ms;
+}
+
+.card-grid > .reveal:nth-child(3n + 3),
+.gallery > .reveal:nth-child(3n + 3),
+.category-list > .reveal:nth-child(3n + 3),
+.tips-list > .reveal:nth-child(3n + 3) {
+  --reveal-delay: 120ms;
+}
 
 
 /* ==========================================================================
@@ -1175,7 +1385,7 @@ body::before {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   }
 
-  /* Desktop: tombol menu disembunyikan, navigasi tampil_inline. */
+  /* Desktop: tombol menu disembunyikan, navigasi tampil inline. */
   .menu-toggle {
     display: none;
   }
@@ -1201,35 +1411,25 @@ body::before {
 
   .site-menu--open {
     display: flex;
+    animation: none;
   }
 
   .site-menu a {
-    position: relative;
     min-height: 44px;
     padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
     font-size: 0.875rem;
   }
 
-  .site-menu a::after {
-    content: "";
-    position: absolute;
-    left: var(--space-4);
-    right: var(--space-4);
-    bottom: 6px;
-    height: 2px;
-    background-color: var(--color-accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--transition);
-  }
-
+  /* Indikator hover sederhana: kapsul hijau muda di dalam navbar kapsul. */
   .site-menu a:hover {
-    background-color: transparent;
+    background-color: var(--color-secondary-soft);
     color: var(--color-accent);
   }
 
-  .site-menu a:hover::after {
-    transform: scaleX(1);
+  .site-menu a:active {
+    background-color: var(--color-accent-soft);
+    color: var(--color-primary);
   }
 }
 
@@ -1246,8 +1446,8 @@ body::before {
   /* Konten langsung tampil tanpa animasi. */
   .has-js-reveal .reveal {
     opacity: 1;
-    transform: none;
-    transition: none;
+    translate: none;
+    animation: none;
   }
 
   *,
@@ -1259,11 +1459,20 @@ body::before {
     scroll-behavior: auto !important;
   }
 
+  /* Animasi masuk panel menu dimatikan, bukan hanya dipercepat. */
+  .site-menu--open {
+    animation: none;
+  }
+
   .destination-card:hover,
   .btn:active,
-  .card-link:hover::after,
-  .category-list button:hover::after,
-  .back-link a:hover::before {
+  .card-link:hover .icon,
+  .card-link:focus-visible .icon,
+  .category-list button:hover .icon,
+  .back-link a:hover .icon,
+  .back-link a:focus-visible .icon,
+  .destination-card:hover .card-image,
+  .gallery figure:hover img {
     transform: none;
   }
 }

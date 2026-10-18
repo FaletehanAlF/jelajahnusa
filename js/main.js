@@ -75,6 +75,32 @@
     });
   }
 
+  // ---------- Ikon SVG inline (satu sistem, lihat bagian 6 css/style.css) ----------
+  // Ikon di sini selalu dekoratif: teks di sebelahnya sudah menjelaskan
+  // maksudnya, jadi setiap ikon diberi aria-hidden dan tidak menambah
+  // accessible name elemen induknya.
+  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+  const ICON_PATHS = {
+    // Penanda lokasi (gaya outline, viewBox 24x24).
+    pin: "M20 10.5c0 5.6-6.1 10.6-8 12.1-1.9-1.5-8-6.5-8-12.1a8 8 0 0 1 16 0Zm-8 2.75a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5Z",
+    arrowRight: "M5 12h14M12 5l7 7-7 7"
+  };
+
+  function buildIcon(name) {
+    const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+    svg.setAttribute("class", "icon");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    const path = document.createElementNS(SVG_NAMESPACE, "path");
+    path.setAttribute("d", ICON_PATHS[name]);
+    svg.appendChild(path);
+    return svg;
+  }
+
   // ---------- Pembuat kartu destinasi (FR-009, FR-010) ----------
   function buildDestinationCard(destination) {
     const card = document.createElement("article");
@@ -98,7 +124,8 @@
 
     const location = document.createElement("p");
     location.className = "card-location";
-    location.textContent = destination.location;
+    location.appendChild(buildIcon("pin"));
+    location.appendChild(document.createTextNode(destination.location));
 
     const description = document.createElement("p");
     description.className = "card-description";
@@ -109,6 +136,7 @@
     // Accessible name memuat nama destinasi (FR-010).
     link.textContent = "Lihat detail " + destination.name;
     link.href = "destination.html?id=" + destination.id;
+    link.appendChild(buildIcon("arrowRight"));
 
     card.appendChild(image);
     card.appendChild(badge);
@@ -140,6 +168,7 @@
       button.type = "button";
       button.textContent = category;
       button.dataset.category = category;
+      button.appendChild(buildIcon("arrowRight"));
       // Kategori aktif ditandai agar wajar bila dipilih dari section ini.
       button.setAttribute("aria-pressed", category === selectedCategory ? "true" : "false");
 
