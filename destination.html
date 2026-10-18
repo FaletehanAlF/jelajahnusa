@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detail Destinasi — JelajahNusa</title>
+  <meta name="description" content="Halaman detail destinasi JelajahNusa: gambaran umum, galeri foto, informasi aktivitas dan tips berkunjung, serta destinasi terkait.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+  <!-- ===== Header + Navigation (markup konsisten dengan index.html) ===== -->
+  <header class="site-header">
+    <a class="site-logo" href="index.html">JelajahNusa</a>
+
+    <nav class="site-nav" aria-label="Navigasi utama">
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="site-menu">
+        Menu
+      </button>
+
+      <ul class="site-menu" id="site-menu">
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="index.html#destinasi">Destinasi</a></li>
+        <li><a href="index.html#kategori">Kategori</a></li>
+        <li><a href="index.html#tips">Tips</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <noscript>
+      <p>JavaScript tidak aktif, sehingga detail destinasi tidak dapat ditampilkan. Silakan kembali ke <a href="index.html#destinasi">daftar destinasi</a> di halaman utama.</p>
+    </noscript>
+
+    <!-- ===== State: destinasi tidak ditemukan (ditampilkan oleh js/destination.js) ===== -->
+    <section class="not-found" id="not-found" hidden>
+      <h1>Destinasi tidak ditemukan</h1>
+      <p>Destinasi yang kamu cari tidak tersedia atau tautannya tidak valid. Silakan kembali ke daftar destinasi untuk memilih destinasi lain.</p>
+      <a class="btn btn-primary" href="index.html#destinasi">Kembali ke Daftar Destinasi</a>
+    </section>
+
+    <!-- ===== State: detail destinasi (diisi oleh js/destination.js dari data.js) ===== -->
+    <div id="destination-detail">
+
+      <!-- 1. Destination hero: gambar, nama, provinsi, kategori, deskripsi singkat -->
+      <section class="destination-hero" id="destination-hero">
+        <!-- src sementara: placeholder transparan 1x1 px; diganti js/destination.js dari data.js -->
+        <img class="destination-hero-image" id="destination-hero-image"
+             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+             alt="" width="1600" height="900">
+        <h1 id="destination-name">Memuat destinasi…</h1>
+        <p class="destination-location" id="destination-location"></p>
+        <p class="badge" id="destination-category"></p>
+        <p class="destination-short-description" id="destination-short-description"></p>
+      </section>
+
+      <!-- 2. Destination overview -->
+      <section class="overview" id="overview">
+        <h2>Gambaran Umum</h2>
+        <div id="destination-description"></div>
+
+        <h3>Daya Tarik Utama</h3>
+        <ul id="destination-highlights"></ul>
+      </section>
+
+      <!-- 3. Photo gallery -->
+      <section class="gallery-section" id="gallery">
+        <h2>Galeri Foto</h2>
+        <div class="gallery" id="destination-gallery"></div>
+      </section>
+
+      <!-- 4. Travel information -->
+      <section class="travel-info" id="travel-info">
+        <h2>Informasi Berkunjung</h2>
+
+        <h3>Aktivitas yang Direkomendasikan</h3>
+        <ul id="destination-activities"></ul>
+
+        <h3>Tips Berkunjung</h3>
+        <ul id="destination-visit-tips"></ul>
+
+        <!-- Catatan verifikasi dirender dari field verifiedInfoNote (js/destination.js) -->
+        <p class="info-note" id="destination-verified-note"></p>
+      </section>
+
+      <!-- 5. Related destinations -->
+      <section class="related" id="related">
+        <h2>Destinasi Terkait</h2>
+        <!-- 2-3 kartu destinasi terkait dirender oleh js/destination.js dari data.js;
+             section disembunyikan jika tidak ada related yang valid (ERR-08) -->
+        <div class="card-grid" id="related-grid"></div>
+      </section>
+
+      <!-- 6. Back-to-destinations navigation -->
+      <p class="back-link">
+        <a href="index.html#destinasi">Kembali ke daftar destinasi</a>
+      </p>
+    </div>
+  </main>
+
+  <!-- ===== Footer (markup konsisten dengan index.html) ===== -->
+  <footer class="site-footer">
+    <p class="footer-brand">JelajahNusa</p>
+    <p>Website inspirasi wisata Indonesia — proyek portfolio untuk latihan HTML semantik, CSS responsif, dan JavaScript dasar.</p>
+    <p>Kredit gambar: sumber, pembuat, dan lisensi setiap foto dicatat di README.md.</p>
+
+    <nav class="footer-nav" aria-label="Navigasi footer">
+      <ul>
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="index.html#destinasi">Destinasi</a></li>
+        <li><a href="index.html#kategori">Kategori</a></li>
+        <li><a href="index.html#tips">Tips</a></li>
+      </ul>
+    </nav>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/destination.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JelajahNusa — Inspirasi Wisata Indonesia</title>
+  <meta name="description" content="JelajahNusa adalah website inspirasi wisata Indonesia. Jelajahi enam destinasi pilihan, cari berdasarkan nama atau provinsi, lalu buka halaman detailnya.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+  <!-- ===== Header + Navigation ===== -->
+  <header class="site-header">
+    <a class="site-logo" href="index.html">JelajahNusa</a>
+
+    <nav class="site-nav" aria-label="Navigasi utama">
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="site-menu">
+        Menu
+      </button>
+
+      <ul class="site-menu" id="site-menu">
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="#destinasi">Destinasi</a></li>
+        <li><a href="#kategori">Kategori</a></li>
+        <li><a href="#tips">Tips</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <noscript>
+      <p>JavaScript tidak aktif, sehingga kartu destinasi, kategori, pencarian, dan filter tidak dapat ditampilkan. Konten lain di halaman ini tetap dapat dibaca.</p>
+    </noscript>
+
+    <!-- ===== 1. Hero ===== -->
+    <section class="hero" id="hero">
+      <h1>Temukan Inspirasi Wisata Indonesia</h1>
+      <p>JelajahNusa merangkum destinasi pilihan dari berbagai provinsi, lengkap dengan gambaran umum, galeri foto, dan informasi berkunjung agar perjalananmu lebih siap.</p>
+      <a class="btn btn-primary" href="#destinasi">Jelajahi Destinasi</a>
+      <!-- TODO: ganti dengan gambar hero asli (sumber & lisensi dicatat di README) saat aset tersedia -->
+      <img class="hero-image" src="assets/images/hero-jelajahnusa.jpg" alt="Panorama destinasi wisata Indonesia" width="1600" height="900">
+    </section>
+
+    <!-- ===== 2. Featured Destinations ===== -->
+    <section class="featured" id="featured">
+      <h2>Destinasi Unggulan</h2>
+      <!-- 3 kartu destinasi unggulan dirender oleh js/main.js dari data.js -->
+      <div class="card-grid" id="featured-grid"></div>
+    </section>
+
+    <!-- ===== 3. Explore by Category ===== -->
+    <section class="categories" id="kategori">
+      <h2>Jelajahi Berdasarkan Kategori</h2>
+      <!-- Tombol kategori dirender oleh js/main.js dari data.js; memilih kategori menerapkan filter pada #destinasi -->
+      <ul class="category-list" id="category-list"></ul>
+    </section>
+
+    <!-- ===== 4. Explore All Destinations ===== -->
+    <section class="destinations" id="destinasi">
+      <h2>Jelajahi Semua Destinasi</h2>
+
+      <form class="search-form" id="search-form" role="search" aria-label="Pencarian destinasi">
+        <label for="search-input">Cari destinasi berdasarkan nama atau provinsi</label>
+        <input type="search" id="search-input" name="q" placeholder="Tulis nama destinasi atau provinsi" autocomplete="off">
+      </form>
+
+      <!-- Tombol filter kategori + tombol "Semua" dirender oleh js/main.js dari data.js -->
+      <ul class="filter-list" id="filter-list"></ul>
+
+      <p class="result-count" id="result-count" aria-live="polite"></p>
+
+      <!-- 6 kartu destinasi dirender oleh js/main.js dari data.js -->
+      <div class="card-grid" id="destination-grid"></div>
+
+      <div class="empty-state" id="empty-state" hidden>
+        <p>Tidak ada destinasi yang cocok dengan pencarian atau filter kamu. Coba kata kunci lain atau atur ulang pencarian dan filter.</p>
+        <button type="button" class="btn btn-secondary" id="reset-filters">Atur Ulang Pencarian dan Filter</button>
+      </div>
+    </section>
+
+    <!-- ===== 5. Travel Tips ===== -->
+    <section class="tips" id="tips">
+      <h2>Tips Perjalanan</h2>
+      <ul class="tips-list">
+        <li>Periksa prakiraan cuaca dan kondisi jalur sebelum berangkat.</li>
+        <li>Bawa air minum, camilan, dan obat pribadi secukupnya.</li>
+        <li>Kenakan pakaian dan alas kaki yang nyaman sesuai medan.</li>
+        <li>Hormati adat istiadat, kepercayaan, dan aturan setempat.</li>
+        <li>Bawa turun sampahmu sendiri dan jaga kebersihan lingkungan.</li>
+        <li>Simpan nomor kontak darurat dan ikuti arahan pemandu atau petugas setempat.</li>
+      </ul>
+    </section>
+
+    <!-- ===== 6. Call-to-Action ===== -->
+    <section class="cta">
+      <h2>Siap Menjelajah?</h2>
+      <p>Mulai dari daftar destinasi dan temukan tempat yang paling cocok untuk liburanmu berikutnya.</p>
+      <a class="btn btn-primary" href="#destinasi">Lihat Semua Destinasi</a>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <p class="footer-brand">JelajahNusa</p>
+    <p>Website inspirasi wisata Indonesia — proyek portfolio untuk latihan HTML semantik, CSS responsif, dan JavaScript dasar.</p>
+    <p>Kredit gambar: sumber, pembuat, dan lisensi setiap foto dicatat di README.md.</p>
+
+    <nav class="footer-nav" aria-label="Navigasi footer">
+      <ul>
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="#destinasi">Destinasi</a></li>
+        <li><a href="#kategori">Kategori</a></li>
+        <li><a href="#tips">Tips</a></li>
+      </ul>
+    </nav>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
