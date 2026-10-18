@@ -243,3 +243,55 @@
     showNotFound();
   }
 })();
+
+// ---------- Animasi masuk viewport (penyempurnaan visual) ----------
+// Berjalan setelah detail/state dirender. Keamanan:
+// 1. Kalau pengguna mengurangi animasi, fungsi langsung berhenti.
+// 2. Kalau IntersectionObserver tidak ada, fungsi berhenti SEBELUM class
+//    "reveal" dipasang, jadi isi halaman tidak pernah disembunyikan.
+// 3. Kalau ada error, semua class dibersihkan kembali sehingga konten tampil.
+// Duplikasi kecil dengan js/main.js disengaja (PRD A-07).
+function initRevealOnScroll() {
+  var reduceMotion =
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !("IntersectionObserver" in window)) return;
+
+  var targets = Array.prototype.slice.call(
+    document.querySelectorAll(
+      ".hero > *, main section > h2, .card-grid > *, .category-list > *, " +
+      ".gallery figure, .tips-list > li, .cta > *, .overview > h3, " +
+      ".overview > div, .overview > ul, .travel-info > h3, .travel-info > ul, " +
+      ".info-note, .back-link, .not-found > *"
+    )
+  );
+  if (targets.length === 0) return;
+
+  try {
+    document.documentElement.classList.add("has-js-reveal");
+    targets.forEach(function (element) {
+      element.classList.add("reveal");
+    });
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target); // hanya sekali per elemen
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -5% 0px" }
+    );
+
+    targets.forEach(function (element) {
+      observer.observe(element);
+    });
+  } catch (error) {
+    document.documentElement.classList.remove("has-js-reveal");
+    targets.forEach(function (element) {
+      element.classList.remove("reveal");
+    });
+  }
+}
+
+initRevealOnScroll();

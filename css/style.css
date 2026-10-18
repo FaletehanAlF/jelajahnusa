@@ -1,9 +1,1255 @@
 /* ==========================================================================
    JelajahNusa — css/style.css
-   TAHAP FONDASI HTML: file ini masih placeholder (belum ada styling).
+   TAHAP 4B: penyempurnaan visual UI (white + green, Montserrat, navbar kapsul,
+   animasi masuk viewport).
 
-   Seluruh styling akan diimplementasikan pada tahap CSS:
-   token warna & font (PRD 13.1–13.2), layout & container (13.3),
-   komponen (13.4), responsif 3 breakpoint (FR-029–FR-031),
-   focus state, skip link, dan prefers-reduced-motion (NFR-007, NFR-015).
+   Arah desain: editorial travel yang bersih dan manusiawi.
+   - Hanya putih dan hijau (berbagai nada) sebagai warna.
+   - Montserrat dipakai konsisten untuk heading, navigasi, tombol, dan isi.
+   - Radius kartu sengaja kecil (8px); bentuk kapsul hanya untuk navbar,
+     tombol, dan chip filter.
+   - Tanpa gradient, glow, glassmorphism, tilt, atau parallax.
+
+   Kontrak dengan JavaScript (nama TIDAK boleh berubah):
+   .site-menu--open, .menu-toggle, .is-active, .destination-card, .card-image,
+   .badge, .card-location, .card-description, .card-link, .card-grid,
+   .category-list, .filter-list, .search-form, .result-count, .empty-state,
+   .info-note, .gallery, .not-found, dan atribut [hidden].
    ========================================================================== */
+
+
+/* ==========================================================================
+   1. DESIGN TOKENS
+   ========================================================================== */
+
+:root {
+  /* Warna dasar: putih + hijau */
+  --color-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-primary: #14352E;        /* hijau tua: heading, tombol utama, footer */
+  --color-primary-soft: #1E4C41;   /* hover tombol utama */
+  --color-primary-deep: #0C2620;   /* hover teks */
+  --color-accent: #2F7D64;         /* hijau aksen: garis, ring, penanda aktif */
+
+  /* Nada hijau pendukung */
+  --color-accent-soft: #E4F0E9;    /* latar badge */
+  --color-secondary-soft: #EAF4EF; /* latar section */
+  --color-tint: #F2F8F4;           /* latar section alternatif */
+
+  /* Warna teks (sudah dihitung dengan formula WCAG 2.x) */
+  --color-ink: #14352E;         /* 13.30:1 di atas #FFFFFF */
+  --color-ink-body: #35544A;    /*  8.34:1 di atas #FFFFFF */
+  --color-ink-muted: #4F6A5E;   /*  5.91:1 di atas #FFFFFF, 5.25:1 di atas #EAF4EF */
+  --color-ink-invert: #FFFFFF;        /* 13.30:1 di atas #14352E */
+  --color-ink-invert-muted: #C6E0D3; /*  9.51:1 di atas #14352E */
+  --color-focus-on-dark: #8FBFAB;    /*  6.47:1 di atas #14352E */
+
+  /* Garis */
+  --color-border: #E3EDE7;
+  --color-border-strong: #9DBCAB;
+
+  /* Tipografi: satu keluarga font untuk seluruh situs */
+  --font-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-body: clamp(0.9375rem, 0.92rem + 0.14vw, 1.0625rem);
+  --lh-body: 1.7;
+
+  /* Layout */
+  --content-max: 70rem;              /* 1120px di dalam gutter */
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --header-height: 4rem;
+
+  /* Spacing (kelipatan 4/8px) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* Bentuk: kartu kecil, kapsul seperlunya */
+  --radius-sm: 4px;
+  --radius-card: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* Bayangan sangat halus */
+  --shadow-sm: 0 1px 2px rgba(20, 53, 46, 0.05);
+  --shadow-md: 0 6px 20px rgba(20, 53, 46, 0.07);
+  --shadow-capsule: 0 2px 12px rgba(20, 53, 46, 0.06);
+
+  /* Transisi singkat */
+  --transition: 180ms ease;
+  --reveal-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+
+/* ==========================================================================
+   2. RESET & DASAR
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-ink-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+}
+
+/* Atribut hidden harus menang atas display komponen. */
+[hidden] {
+  display: none !important;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+figure {
+  margin: 0;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--color-primary-deep);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+
+/* ==========================================================================
+   3. TIPOGRAFI
+   ========================================================================== */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-3);
+  overflow-wrap: break-word;
+}
+
+h1 {
+  font-size: clamp(1.875rem, 1.25rem + 2.6vw, 2.875rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 1.22rem + 1.35vw, 2.125rem);
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.1875rem;
+  font-weight: 700;
+}
+
+p {
+  margin: 0 0 var(--space-4);
+}
+
+/* Garis aksen pendek di atas judul section. */
+main section > h2:first-of-type {
+  margin-bottom: var(--space-5);
+}
+
+main section > h2:first-of-type::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin-bottom: var(--space-4);
+  background-color: var(--color-accent);
+}
+
+noscript {
+  display: block;
+  max-width: 60ch;
+  margin: var(--space-5) auto 0;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+  color: var(--color-ink-body);
+}
+
+
+/* ==========================================================================
+   4. LAYOUT: CONTAINER & SECTION
+   ========================================================================== */
+
+main section,
+.site-footer {
+  /* Konten terpusat; latar section tetap bisa full-bleed. */
+  padding-inline: max(var(--gutter), calc((100% - var(--content-max)) / 2));
+}
+
+main section {
+  padding-block: clamp(2.75rem, 6vw, 5.5rem);
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
+}
+
+/* Latar section: hanya putih dan hijau muda. */
+.categories,
+.gallery-section,
+.cta {
+  background-color: var(--color-secondary-soft);
+}
+
+.tips,
+.related {
+  background-color: var(--color-tint);
+}
+
+
+/* ==========================================================================
+   5. FOCUS STATE & SKIP LINK
+   ========================================================================== */
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-4);
+  z-index: 100;
+  transform: translateY(-250%);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-card);
+  background-color: var(--color-primary);
+  color: var(--color-ink-invert);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--transition);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  color: var(--color-ink-invert);
+}
+
+/* Hanya fokus keyboard yang diberi indikator (outline tidak pernah dihapus). */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Di atas latar hijau tua, outline memakai hijau muda (6.47:1). */
+.site-footer :focus-visible,
+.skip-link:focus-visible {
+  outline-color: var(--color-focus-on-dark);
+}
+
+
+/* ==========================================================================
+   6. KOMPONEN: TOMBOL
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: var(--space-3) var(--space-6);
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-ink-invert);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary-soft);
+  color: var(--color-ink-invert);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-ink-invert);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+
+/* ==========================================================================
+   7. NAVBAR KAPSUL
+   ========================================================================== */
+
+.site-header {
+  position: sticky;
+  top: var(--space-2);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  /* Mengambang: jarak dari tepi layar, sejajar dengan konten halaman. */
+  margin-inline: max(var(--gutter), calc((100% - var(--content-max)) / 2));
+  padding-inline: var(--space-3) var(--space-2);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-capsule);
+}
+
+.site-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding-left: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.site-logo:hover {
+  color: var(--color-accent);
+}
+
+/* Tombol buka/tutup menu (mobile). */
+.menu-toggle {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.menu-toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.menu-toggle[aria-expanded="true"] {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-ink-invert);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Panel menu mobile: disembunyikan default, dibuka class dari JavaScript. */
+.site-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline: var(--space-2);
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-3);
+  list-style: none;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.site-menu--open {
+  display: flex;
+}
+
+.site-menu a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-card);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.site-menu a:hover {
+  background-color: var(--color-secondary-soft);
+  color: var(--color-accent);
+}
+
+
+/* ==========================================================================
+   8. HERO BERANDA
+   ========================================================================== */
+
+.hero {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "title"
+    "text"
+    "cta"
+    "image";
+  align-content: start;
+}
+
+.hero h1 {
+  grid-area: title;
+  max-width: 18ch;
+  margin-bottom: 0;
+}
+
+.hero p {
+  grid-area: text;
+  max-width: 52ch;
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+.hero .btn {
+  grid-area: cta;
+  justify-self: start;
+}
+
+.hero-image {
+  grid-area: image;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-card);
+  background-color: var(--color-secondary-soft);
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+}
+
+
+/* ==========================================================================
+   9. KARTU DESTINASI
+   ========================================================================== */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+}
+
+.destination-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  transition: border-color var(--transition), box-shadow var(--transition),
+    transform var(--transition);
+}
+
+.destination-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.card-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background-color: var(--color-secondary-soft);
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+}
+
+.badge {
+  align-self: flex-start;
+  justify-self: start;   /* badge juga dipakai di dalam grid hero detail */
+  display: inline-flex;
+  align-items: center;
+  margin: var(--space-4) var(--space-5) 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent-soft);
+  color: var(--color-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.7;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#destination-category {
+  grid-area: cat;
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+}
+
+.destination-card > h3 {
+  margin: var(--space-3) var(--space-5) 0;
+  font-size: 1.0625rem;
+}
+
+.card-location {
+  margin: var(--space-1) var(--space-5) 0;
+  color: var(--color-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.card-description {
+  margin: var(--space-3) var(--space-5) 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: auto var(--space-5) 0;   /* tautan rata bawah kartu */
+  padding: var(--space-4) 0 var(--space-5);
+  align-self: flex-start;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  color: var(--color-accent);
+}
+
+.card-link::after {
+  content: "\2192";
+  transition: transform var(--transition);
+}
+
+.card-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.card-link:hover::after {
+  transform: translateX(3px);
+}
+
+
+/* ==========================================================================
+   10. KATEGORI
+   ========================================================================== */
+
+.category-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: 72px;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.category-list button::after {
+  content: "\2192";
+  font-size: 1rem;
+  color: var(--color-accent);
+  transition: transform var(--transition);
+}
+
+.category-list button:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-ink-invert);
+}
+
+.category-list button:hover::after {
+  transform: translateX(3px);
+  color: var(--color-ink-invert);
+}
+
+/* Status aktif ditandai warna + bobot + garis (bukan hanya warna). */
+.category-list button[aria-pressed="true"] {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-ink-invert);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.category-list button[aria-pressed="true"]::after {
+  color: var(--color-ink-invert);
+}
+
+
+/* ==========================================================================
+   11. PENCARIAN, FILTER, HASIL & EMPTY STATE
+   ========================================================================== */
+
+.search-form {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 32rem;
+  margin-bottom: var(--space-5);
+}
+
+.search-form label {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.search-form input {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  transition: border-color var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-form input::placeholder {
+  color: var(--color-ink-muted);
+  opacity: 1;
+}
+
+.search-form input:hover {
+  border-color: var(--color-accent);
+}
+
+.filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.filter-list button {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.filter-list button:hover {
+  background-color: var(--color-secondary-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.filter-list button.is-active,
+.filter-list button[aria-pressed="true"] {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-ink-invert);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.result-count {
+  margin: 0 0 var(--space-5);
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  text-align: center;
+}
+
+.empty-state p {
+  max-width: 46ch;
+  margin-bottom: 0;
+}
+
+
+/* ==========================================================================
+   12. TIPS PERJALANAN
+   ========================================================================== */
+
+.tips-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: tips;
+}
+
+.tips-list li {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  column-gap: var(--space-3);
+  counter-increment: tips;
+  padding: var(--space-5);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  color: var(--color-ink-body);
+  font-size: 0.9375rem;
+  transition: border-color var(--transition);
+}
+
+.tips-list li:hover {
+  border-color: var(--color-border-strong);
+}
+
+.tips-list li::before {
+  content: counter(tips, decimal-leading-zero);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1.45;
+}
+
+
+/* ==========================================================================
+   13. CALL TO ACTION
+   ========================================================================== */
+
+.cta {
+  text-align: center;
+}
+
+.cta h2 {
+  margin-bottom: var(--space-3);
+}
+
+.cta p {
+  max-width: 50ch;
+  margin: 0 auto var(--space-5);
+}
+
+
+/* ==========================================================================
+   14. FOOTER
+   ========================================================================== */
+
+.site-footer {
+  padding-block: var(--space-7);
+  background-color: var(--color-primary);
+  color: var(--color-ink-invert-muted);
+  font-size: 0.875rem;
+}
+
+.site-footer p {
+  max-width: 60ch;
+  margin-bottom: var(--space-3);
+}
+
+.footer-brand {
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-invert);
+}
+
+.footer-brand::after {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin-top: var(--space-3);
+  background-color: var(--color-accent);
+}
+
+.footer-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-ink-invert);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer-nav a:hover {
+  color: var(--color-focus-on-dark);
+  text-decoration: underline;
+}
+
+
+/* ==========================================================================
+   15. HALAMAN DETAIL DESTINASI
+   ========================================================================== */
+
+.destination-hero {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "image"
+    "cat"
+    "title"
+    "loc"
+    "text";
+  align-content: start;
+}
+
+.destination-hero-image {
+  grid-area: image;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-card);
+  background-color: var(--color-secondary-soft);
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+}
+
+.destination-hero h1 {
+  grid-area: title;
+  margin-bottom: 0;
+}
+
+.destination-location {
+  grid-area: loc;
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.destination-short-description {
+  grid-area: text;
+  margin: 0;
+  max-width: 54ch;
+  font-size: 1rem;
+}
+
+.overview h3,
+.travel-info h3 {
+  margin: var(--space-6) 0 var(--space-3);
+  font-size: 1.0625rem;
+}
+
+#destination-description {
+  max-width: 68ch;
+}
+
+.overview ul,
+.travel-info ul {
+  max-width: 68ch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview li,
+.travel-info li {
+  position: relative;
+  padding: var(--space-2) 0 var(--space-2) var(--space-5);
+}
+
+.overview li::before,
+.travel-info li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.78em;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 1px;
+  background-color: var(--color-accent);
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+}
+
+.gallery figure {
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.gallery img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background-color: var(--color-secondary-soft);
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+}
+
+.gallery figcaption {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.info-note {
+  max-width: 68ch;
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4) var(--space-5);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  background-color: var(--color-surface);
+  font-size: 0.875rem;
+}
+
+.back-link {
+  padding-block: var(--space-6) var(--space-7);
+}
+
+.back-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.back-link a::before {
+  content: "\2190";
+  transition: transform var(--transition);
+}
+
+.back-link a:hover {
+  text-decoration: underline;
+  color: var(--color-accent);
+}
+
+.back-link a:hover::before {
+  transform: translateX(-3px);
+}
+
+.not-found {
+  max-width: 44rem;
+  margin-inline: auto;
+  padding-block: clamp(3rem, 8vw, 6rem);
+  text-align: center;
+}
+
+.not-found h1 {
+  margin-bottom: var(--space-4);
+}
+
+.not-found p {
+  max-width: 50ch;
+  margin: 0 auto var(--space-6);
+}
+
+
+/* ==========================================================================
+   16. ANIMASI MASUK VIEWPORT
+   Hanya aktif bila JavaScript menandai <html class="has-js-reveal">.
+   Tanpa JavaScript / tanpa IntersectionObserver, semua konten tetap terlihat.
+   ========================================================================== */
+
+.reveal {
+  --reveal-delay: 0ms;
+  transition: opacity 620ms var(--reveal-ease), transform 620ms var(--reveal-ease);
+  transition-delay: var(--reveal-delay);
+}
+
+.has-js-reveal .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.has-js-reveal .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger ringan antar kartu / item tips (maksimal 6 langkah). */
+.card-grid > .reveal:nth-child(1),
+.tips-list > .reveal:nth-child(1) { --reveal-delay: 0ms; }
+.card-grid > .reveal:nth-child(2),
+.tips-list > .reveal:nth-child(2) { --reveal-delay: 70ms; }
+.card-grid > .reveal:nth-child(3),
+.tips-list > .reveal:nth-child(3) { --reveal-delay: 140ms; }
+.card-grid > .reveal:nth-child(4),
+.tips-list > .reveal:nth-child(4) { --reveal-delay: 210ms; }
+.card-grid > .reveal:nth-child(5),
+.tips-list > .reveal:nth-child(5) { --reveal-delay: 280ms; }
+.card-grid > .reveal:nth-child(6),
+.tips-list > .reveal:nth-child(6) { --reveal-delay: 350ms; }
+
+
+/* ==========================================================================
+   17. RESPONSIF — 600px (tablet) & 1024px (desktop)
+   ========================================================================== */
+
+@media (min-width: 600px) {
+  :root {
+    --header-height: 4.25rem;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "title image"
+      "text  image"
+      "cta   image";
+    gap: var(--space-5) var(--space-6);
+    align-items: center;
+  }
+
+  .hero h1 {
+    max-width: 15ch;
+  }
+
+  .card-grid,
+  .gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .category-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tips-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .destination-hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    grid-template-areas:
+      "image cat"
+      "image title"
+      "image loc"
+      "image text";
+    column-gap: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid,
+  .gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .category-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tips-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  }
+
+  /* Desktop: tombol menu disembunyikan, navigasi tampil_inline. */
+  .menu-toggle {
+    display: none;
+  }
+
+  .site-nav {
+    padding-right: var(--space-2);
+  }
+
+  .site-menu {
+    position: static;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-1);
+    inset-inline: auto;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .site-menu--open {
+    display: flex;
+  }
+
+  .site-menu a {
+    position: relative;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    font-size: 0.875rem;
+  }
+
+  .site-menu a::after {
+    content: "";
+    position: absolute;
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: 6px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition);
+  }
+
+  .site-menu a:hover {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+
+  .site-menu a:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+
+/* ==========================================================================
+   18. GERAK TERBATAS & REDUCED MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* Konten langsung tampil tanpa animasi. */
+  .has-js-reveal .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .destination-card:hover,
+  .btn:active,
+  .card-link:hover::after,
+  .category-list button:hover::after,
+  .back-link a:hover::before {
+    transform: none;
+  }
+}
