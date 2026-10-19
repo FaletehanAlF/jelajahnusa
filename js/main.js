@@ -45,10 +45,33 @@
   }
 
   // ---------- Menu mobile (FR-002, FR-003) ----------
-  function setMenuOpen(open) {
+  let menuCloseTimer = null;
+
+  function setMenuOpen(open, immediateClose) {
     if (!menuToggle || !siteMenu) return;
+
+    const wasOpen = siteMenu.classList.contains("site-menu--open");
+    window.clearTimeout(menuCloseTimer);
     menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
-    siteMenu.classList.toggle("site-menu--open", open);
+
+    if (open) {
+      siteMenu.classList.remove("site-menu--closing");
+      siteMenu.classList.add("site-menu--open");
+      return;
+    }
+
+    siteMenu.classList.remove("site-menu--open");
+
+    // Tutup dengan animasi singkat, kecuali saat pengguna memilih tautan
+    // (langsung tutup agar fokus tidak tertinggal di panel yang memudar).
+    if (wasOpen && !immediateClose) {
+      siteMenu.classList.add("site-menu--closing");
+      menuCloseTimer = window.setTimeout(function () {
+        siteMenu.classList.remove("site-menu--closing");
+      }, 180);
+    } else {
+      siteMenu.classList.remove("site-menu--closing");
+    }
   }
 
   function initMenuToggle() {
@@ -62,7 +85,7 @@
     // Tutup menu setelah memilih tautan di dalamnya.
     siteMenu.addEventListener("click", function (event) {
       if (event.target.closest("a")) {
-        setMenuOpen(false);
+        setMenuOpen(false, true);
       }
     });
 
@@ -73,6 +96,26 @@
         menuToggle.focus();
       }
     });
+  }
+
+  // Saat layar melebar ke desktop, bersihkan state menu mobile (ERR-12).
+  function initMenuViewportReset() {
+    if (!menuToggle || !siteMenu || !window.matchMedia) return;
+
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+
+    function resetMenuOnDesktop(event) {
+      if (!event.matches) return;
+      window.clearTimeout(menuCloseTimer);
+      menuToggle.setAttribute("aria-expanded", "false");
+      siteMenu.classList.remove("site-menu--open", "site-menu--closing");
+    }
+
+    if (desktopQuery.addEventListener) {
+      desktopQuery.addEventListener("change", resetMenuOnDesktop);
+    } else if (desktopQuery.addListener) {
+      desktopQuery.addListener(resetMenuOnDesktop);
+    }
   }
 
   // ---------- Ikon SVG inline (satu sistem, lihat bagian 6 css/style.css) ----------
@@ -297,6 +340,7 @@
 
   // ---------- Init ----------
   initMenuToggle();
+  initMenuViewportReset();
   renderFeatured();
   renderCategoryButtons();
   renderFilterButtons();
@@ -321,14 +365,29 @@ function initRevealOnScroll() {
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduceMotion || !("IntersectionObserver" in window)) return;
 
-  var targets = Array.prototype.slice.call(
-    document.querySelectorAll(
-      ".hero > *, main section > h2, .card-grid > *, .category-list > *, " +
-      ".gallery figure, .tips-list > li, .cta > *, .overview > h3, " +
-      ".overview > div, .overview > ul, .travel-info > h3, .travel-info > ul, " +
-      ".info-note, .back-link, .not-found > *"
-    )
-  );
+  // Aturan arah masuk: [selektor, arah]. "left"/"right" dipakai untuk konten
+  // yang memang berada di sisi kiri/kanan; "up" adalah fade-up halus.
+  var revealRules = [
+    [".hero__intro > *", "up"],
+    [".hero-cards > li", "up"],
+    [".cta > *", "up"],
+    ["main section > h2", "left"],
+    [".card-grid > *", "up"],
+    [".category-list > *", "up"],
+    [".tips-list > li", "up"],
+    [".not-found > *", "up"]
+  ];
+
+  var targets = [];
+  revealRules.forEach(function (rule) {
+    document.querySelectorAll(rule[0]).forEach(function (element) {
+      if (targets.indexOf(element) !== -1) return; // aturan pertama menang
+      if (rule[1] !== "up") {
+        element.setAttribute("data-reveal", rule[1]);
+      }
+      targets.push(element);
+    });
+  });
   if (targets.length === 0) return;
 
   var pending = [];
@@ -385,6 +444,7 @@ function initRevealOnScroll() {
     document.documentElement.classList.remove("has-js-reveal");
     targets.forEach(function (element) {
       element.classList.remove("reveal");
+      element.removeAttribute("data-reveal");
     });
   }
 }

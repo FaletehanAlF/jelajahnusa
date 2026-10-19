@@ -1,24 +1,26 @@
 /* ==========================================================================
    JelajahNusa — css/style.css
-   Penyempurnaan visual: ikon SVG, micro-interaction, animasi scroll.
-   (dibangun di atas Tahap 4B: white + green, Montserrat, navbar kapsul)
+   Redesign editorial travel: putih murni, hijau #008000, Montserrat,
+   navbar kapsul, hero kartu editorial, dan reveal yang menghormati
+   prefers-reduced-motion.
 
-   Arah desain: editorial travel yang bersih dan manusiawi.
-   - Hanya putih dan hijau (berbagai nada) sebagai warna.
-   - Montserrat dipakai konsisten untuk heading, navigasi, tombol, dan isi.
-   - Radius kartu sengaja kecil (8px); bentuk kapsul hanya untuk navbar,
-     tombol, chip filter, dan tautan navigasi.
-   - Ikon memakai satu sistem (lihat bagian 6): viewBox 24x24, outline,
-     stroke 1.8, `currentColor`, ukuran dari token --icon-size.
-   - Tanpa gradient, glow, glassmorphism, tilt, atau parallax.
+   Arah desain:
+   - Latar utama #FFFFFF; hijau #008000 sebagai warna merek.
+   - Montserrat konsisten untuk heading, navigasi, tombol, form, dan isi.
+   - Radius kartu 14px; bentuk kapsul hanya untuk navbar, tombol, dan chip.
+   - Ikon satu sistem (bagian 6): viewBox 24x24, outline, stroke 1.8,
+     `currentColor`, ukuran dari token --icon-size.
+   - Tanpa gradient, glow, glassmorphism, tilt, parallax, atau scroll hijack.
 
    Kontrak dengan JavaScript (nama TIDAK boleh berubah):
-   .site-menu--open, .menu-toggle, .is-active, .destination-card, .card-image,
+   .site-menu--open, .site-menu--closing, .menu-toggle, .is-active,
+   .destination-card, .card-image,
    .badge, .card-location, .card-description, .card-link, .card-grid,
    .category-list, .filter-list, .search-form, .result-count, .empty-state,
    .info-note, .gallery, .not-found, dan atribut [hidden].
    Class tambahan dari JavaScript: .reveal / .is-visible pada <html
-   class="has-js-reveal">, serta elemen .icon hasil buildIcon().
+   class="has-js-reveal">, atribut data-reveal="left|right", serta elemen
+   .icon hasil buildIcon(). Hero memakai .hero-cards/.hero-card (statis).
    ========================================================================== */
 
 
@@ -27,38 +29,49 @@
    ========================================================================== */
 
 :root {
-  /* Warna dasar: putih + hijau */
-  --color-bg: #FFFFFF;
-  --color-surface: #FFFFFF;
-  --color-primary: #14352E;        /* hijau tua: heading, tombol utama, footer */
-  --color-primary-soft: #1E4C41;   /* hover tombol utama */
-  --color-primary-deep: #0C2620;   /* hover teks */
-  --color-accent: #2F7D64;         /* hijau aksen: garis, ring, penanda aktif */
+  /* ===== Warna inti (mandat desain: putih + hijau #008000) ===== */
+  --color-background: #FFFFFF;          /* latar utama: putih murni */
+  --color-bg: var(--color-background);
+  --color-white: #FFFFFF;
 
-  /* Nada hijau pendukung */
-  --color-accent-soft: #E4F0E9;    /* latar badge */
-  --color-secondary-soft: #EAF4EF; /* latar section */
-  --color-tint: #F2F8F4;           /* latar section alternatif */
+  --color-primary: #008000;            /* hijau merek */
+  --color-primary-hover: #006400;      /* hover tombol/tautan di atas putih */
+  --color-primary-deep: #004D00;      /* state pressed pada elemen hijau */
+  --color-primary-soft: #EAF5EA;       /* latar hijau muda: badge, state aktif */
 
-  /* Warna teks (sudah dihitung dengan formula WCAG 2.x) */
-  --color-ink: #14352E;         /* 13.30:1 di atas #FFFFFF */
-  --color-ink-body: #35544A;    /*  8.34:1 di atas #FFFFFF */
-  --color-ink-muted: #4F6A5E;   /*  5.91:1 di atas #FFFFFF, 5.25:1 di atas #EAF4EF */
-  --color-ink-invert: #FFFFFF;        /* 13.30:1 di atas #14352E */
-  --color-ink-invert-muted: #C6E0D3; /*  9.51:1 di atas #14352E */
-  --color-focus-on-dark: #8FBFAB;    /*  6.47:1 di atas #14352E */
+  /* Teks netral (kontras dihitung di atas #FFFFFF) */
+  --color-text: #1B211C;               /* 15.9:1 — heading & teks utama */
+  --color-text-body: #3D453D;          /*  9.9:1 — paragraf */
+  --color-text-secondary: #626B63;     /*  5.5:1 — label, keterangan */
+  --color-ink: var(--color-text);      /* alias lama, dipakai CSS internal */
+  --color-ink-body: var(--color-text-body);
+  --color-ink-muted: var(--color-text-secondary);
+  --color-ink-invert: #FFFFFF;         /* 5.1:1 di atas #008000, 7.4:1 di atas #006400 */
+  --color-ink-invert-muted: #E2F0E2;  /* 6.3:1 di atas #006400 (footer) */
+  --color-focus-on-dark: #A8D9A8;      /* 4.7:1 di atas #006400 (outline di footer) */
+
+  /* Aksen = hijau merek (garis, penanda, konter) */
+  --color-accent: var(--color-primary);
+  --color-accent-soft: var(--color-primary-soft);
+  --color-secondary-soft: var(--color-primary-soft); /* alias lama */
+  --color-tint: #F2F7F2;              /* latar section alternatif, lebih tenang */
 
   /* Garis */
-  --color-border: #E3EDE7;
-  --color-border-strong: #9DBCAB;
+  --color-border: #E5EAE5;
+  --color-border-strong: #8A948A;     /* 3.1:1 di atas putih (komponen UI) */
 
-  /* Tipografi: satu keluarga font untuk seluruh situs */
-  --font-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --fs-body: clamp(0.9375rem, 0.92rem + 0.14vw, 1.0625rem);
+  /* Permukaan */
+  --color-surface: #F7FAF7;
+  --color-media: #EFF4EF;             /* slot gambar/placeholder media */
+
+  /* Tipografi: Montserrat konsisten */
+  --font-primary: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: var(--font-primary);    /* alias lama, dipakai CSS internal */
+  --fs-body: clamp(0.9rem, 0.86rem + 0.16vw, 1rem);
   --lh-body: 1.7;
 
   /* Layout */
-  --content-max: 70rem;              /* 1120px di dalam gutter */
+  --content-max: 70rem;                /* 1120px di dalam gutter */
   --gutter: clamp(1rem, 4vw, 2.5rem);
   --header-height: 4rem;
 
@@ -72,24 +85,28 @@
   --space-7: 3rem;
 
   /* Bentuk: kartu kecil, kapsul seperlunya */
-  --radius-sm: 4px;
-  --radius-card: 8px;
+  --radius-sm: 6px;
+  --radius-card: 14px;
+  --radius-control: 10px;
   --radius-lg: 14px;
   --radius-pill: 999px;
 
-  /* Ikon: satu sistem untuk seluruh situs (dua ukuran + penanda merek) */
+  /* Ikon: satu sistem untuk seluruh situs */
   --icon-size: 18px;
   --icon-size-sm: 15px;
 
-  /* Bayangan sangat halus */
-  --shadow-sm: 0 1px 2px rgba(20, 53, 46, 0.05);
-  --shadow-md: 0 6px 20px rgba(20, 53, 46, 0.07);
-  --shadow-capsule: 0 2px 12px rgba(20, 53, 46, 0.06);
+  /* Bayangan netral sangat halus */
+  --shadow-sm: 0 1px 2px rgba(27, 33, 28, 0.05);
+  --shadow-md: 0 6px 20px rgba(27, 33, 28, 0.07);
+  --shadow-capsule: 0 2px 12px rgba(27, 33, 28, 0.06);
 
-  /* Transisi singkat */
-  --transition: 180ms ease;
-  --transition-slow: 260ms ease;
-  --reveal-duration: 480ms;
+  /* Transisi */
+  --transition: 180ms ease;           /* alias: --transition-fast */
+  --transition-fast: 180ms ease;
+  --transition-slow: 260ms ease;      /* alias: --transition-normal */
+  --transition-normal: 260ms ease;
+  --transition-menu: 160ms;
+  --reveal-duration: 420ms;
   --reveal-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -107,10 +124,13 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* Animasi reveal kiri/kanan tidak boleh menambah scrollbar horizontal. */
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
+  overflow-x: clip;
   background-color: var(--color-bg);
   color: var(--color-ink-body);
   font-family: var(--font-sans);
@@ -143,7 +163,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-primary-deep);
+  color: var(--color-primary-hover);
 }
 
 /* Tautan yang mengandalkan hover memakai garis bawah transparan supaya
@@ -156,8 +176,11 @@ a:hover {
 }
 
 .card-link:hover,
+.card-link:focus-visible,
 .back-link a:hover,
-.footer-nav a:hover {
+.back-link a:focus-visible,
+.footer-nav a:hover,
+.footer-nav a:focus-visible {
   text-decoration-color: currentColor;
 }
 
@@ -186,16 +209,21 @@ h1 {
   font-size: clamp(1.875rem, 1.25rem + 2.6vw, 2.875rem);
   font-weight: 700;
   letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
 h2 {
-  font-size: clamp(1.5rem, 1.22rem + 1.35vw, 2.125rem);
+  font-size: clamp(1.75rem, 1.3rem + 1.5vw, 2.75rem);
   font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 h3 {
   font-size: 1.1875rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 p {
@@ -247,7 +275,7 @@ main section {
 .categories,
 .gallery-section,
 .cta {
-  background-color: var(--color-secondary-soft);
+  background-color: var(--color-surface);
 }
 
 .tips,
@@ -366,7 +394,7 @@ body::before {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background-color var(--transition), color var(--transition),
-    border-color var(--transition);
+    border-color var(--transition), transform var(--transition);
 }
 
 .btn-primary {
@@ -376,14 +404,15 @@ body::before {
 }
 
 .btn-primary:hover {
-  background-color: var(--color-primary-soft);
-  border-color: var(--color-primary-soft);
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
   color: var(--color-ink-invert);
 }
 
 .btn-primary:active {
   background-color: var(--color-primary-deep);
   border-color: var(--color-primary-deep);
+  color: var(--color-ink-invert);
 }
 
 .btn-secondary {
@@ -393,14 +422,15 @@ body::before {
 }
 
 .btn-secondary:hover {
-  background-color: var(--color-primary);
-  color: var(--color-ink-invert);
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary-hover);
 }
 
 .btn-secondary:active {
-  background-color: var(--color-primary-deep);
-  border-color: var(--color-primary-deep);
-  color: var(--color-ink-invert);
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary-hover);
 }
 
 .btn:active {
@@ -447,12 +477,16 @@ body::before {
 }
 
 .site-logo .icon {
-  color: var(--color-accent);
+  color: var(--color-primary);
   transition: color var(--transition);
 }
 
 .site-logo:hover .icon {
-  color: var(--color-primary);
+  color: var(--color-primary-hover);
+}
+
+.site-logo:active {
+  color: var(--color-primary-deep);
 }
 
 /* Tombol buka/tutup menu (mobile). */
@@ -505,6 +539,16 @@ body::before {
   display: block;
 }
 
+.menu-toggle[aria-expanded="true"]:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.menu-toggle[aria-expanded="true"]:active {
+  background-color: var(--color-primary-deep);
+  border-color: var(--color-primary-deep);
+}
+
 .site-nav {
   display: flex;
   align-items: center;
@@ -531,9 +575,20 @@ body::before {
   box-shadow: var(--shadow-md);
 }
 
-.site-menu--open {
+.site-menu--open,
+.site-menu--closing {
   display: flex;
-  animation: menu-in 200ms var(--reveal-ease) both;
+}
+
+.site-menu--open {
+  animation: menu-in var(--transition-menu) var(--reveal-ease) both;
+}
+
+/* Animasi penutup singkat supaya panel tidak menghilang mendadak.
+   `pointer-events: none` mencegah tautan setengah transparan ikut terklik. */
+.site-menu--closing {
+  pointer-events: none;
+  animation: menu-out var(--transition-menu) var(--reveal-ease) both;
 }
 
 @keyframes menu-in {
@@ -547,7 +602,19 @@ body::before {
   }
 }
 
+@keyframes menu-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
 .site-menu a {
+  position: relative;
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -564,58 +631,234 @@ body::before {
 
 .site-menu a:hover {
   background-color: var(--color-secondary-soft);
-  color: var(--color-accent);
+  /* Hijau lebih tua dipakai di atas latar sage agar kontras teks tetap ≥ 4.5:1. */
+  color: var(--color-primary-hover);
 }
 
 .site-menu a:active {
   background-color: var(--color-accent-soft);
+  color: var(--color-primary-deep);
+}
+
+/* Halaman aktif: latar lembut + garis pendek + bobot teks, bukan warna saja. */
+.site-menu a[aria-current="page"] {
+  background-color: var(--color-secondary-soft);
+  color: var(--color-primary-hover);
+  font-weight: 700;
+}
+
+.site-menu a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 14px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent);
+  transform: translateX(-50%);
 }
 
 
 /* ==========================================================================
-   8. HERO BERANDA
+   8. HERO BERANDA — komposisi editorial (pusat)
    ========================================================================== */
 
 .hero {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "title"
-    "text"
-    "cta"
-    "image";
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-7);
+  text-align: center;
 }
 
-.hero h1 {
-  grid-area: title;
-  max-width: 18ch;
-  margin-bottom: 0;
-}
-
-.hero p {
-  grid-area: text;
-  max-width: 52ch;
-  margin-bottom: 0;
-  font-size: 1rem;
-}
-
-.hero .btn {
-  grid-area: cta;
-  justify-self: start;
-}
-
-.hero-image {
-  grid-area: image;
+.hero__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
   width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: var(--radius-card);
-  background-color: var(--color-secondary-soft);
-  color: var(--color-ink-muted);
+}
+
+.hero__eyebrow {
+  margin: 0;
+  color: var(--color-primary);
   font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hero__title {
+  margin: 0;
+  max-width: 24ch;
+  font-size: clamp(2.25rem, 5vw, 4.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.hero__description {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--color-text-secondary);
+  font-size: clamp(0.95rem, 0.92rem + 0.2vw, 1.0625rem);
+  line-height: 1.7;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-2);
+}
+
+.hero__secondary-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: color var(--transition), text-decoration-color var(--transition);
+}
+
+.hero__secondary-link:hover,
+.hero__secondary-link:focus-visible {
+  color: var(--color-primary-hover);
+  text-decoration-color: currentColor;
+}
+
+.hero__secondary-link .icon {
+  transition: transform var(--transition-slow);
+}
+
+.hero__secondary-link:hover .icon,
+.hero__secondary-link:focus-visible .icon {
+  transform: translateX(3px);
+}
+
+/* Kartu editorial di hero */
+.hero-cards {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-1) 0 var(--space-2);
+  width: 100%;
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--space-2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+  text-align: left;
+}
+
+.hero-cards > li {
+  flex: 0 0 min(76%, 18rem);
+  scroll-snap-align: start;
+}
+
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--radius-card);
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--transition);
+}
+
+.hero-card__media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 11rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-media);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+/* Slot gambar masa depan: gambar yang ditambahkan pemilik otomatis mengisi slot. */
+.hero-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.hero-card__media-icon {
+  width: 26px;
+  height: 26px;
+  color: var(--color-text-secondary);
+  opacity: 0.45;
+}
+
+/* Setelah gambar AVIF ditambahkan ke slot, ikon penanda slot otomatis hilang. */
+.hero-card__media:has(img) .hero-card__media-icon {
+  display: none;
+}
+
+.hero-card__label {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero-card__title {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--transition);
+}
+
+.hero-card__note {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.hero-card--featured .hero-card__title {
+  font-size: 1.25rem;
+}
+
+.hero-card--featured .hero-card__note {
+  font-size: 0.875rem;
+}
+
+@media (hover: hover) {
+  .hero-card:hover .hero-card__media,
+  .hero-card:focus-visible .hero-card__media {
+    border-color: var(--color-border-strong);
+    background-color: var(--color-primary-soft);
+  }
+
+  .hero-card:hover .hero-card__title,
+  .hero-card:focus-visible .hero-card__title {
+    text-decoration-color: currentColor;
+  }
+
+  .hero-card:hover .hero-card__media img,
+  .hero-card:focus-visible .hero-card__media img {
+    transform: scale(1.03);
+  }
 }
 
 
@@ -645,7 +888,7 @@ body::before {
   height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  background-color: var(--color-secondary-soft);
+  background-color: var(--color-media);
   color: var(--color-ink-muted);
   font-size: 0.8125rem;
   transition: transform var(--transition-slow);
@@ -656,14 +899,20 @@ body::before {
    Hanya `transform` + warna: tidak ada pergeseran tata letak. */
 @media (hover: hover) {
   .destination-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     border-color: var(--color-border-strong);
     box-shadow: var(--shadow-md);
   }
 
   .destination-card:hover .card-image {
-    transform: scale(1.04);
+    transform: scale(1.035);
   }
+}
+
+/* Kartu juga menandai dirinya saat tautan di dalamnya menerima fokus keyboard. */
+.destination-card:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .badge {
@@ -675,7 +924,7 @@ body::before {
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   background-color: var(--color-accent-soft);
-  color: var(--color-primary);
+  color: var(--color-primary-hover);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -730,7 +979,11 @@ body::before {
 }
 
 .card-link:hover {
-  color: var(--color-primary);
+  color: var(--color-primary-hover);
+}
+
+.card-link:active {
+  color: var(--color-primary-deep);
 }
 
 .card-link:hover .icon {
@@ -783,19 +1036,20 @@ body::before {
 }
 
 .category-list button:hover {
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-soft);
   border-color: var(--color-primary);
-  color: var(--color-ink-invert);
+  color: var(--color-primary-hover);
 }
 
 .category-list button:hover .icon {
   transform: translateX(3px);
-  color: var(--color-ink-invert);
+  color: var(--color-primary-hover);
 }
 
 .category-list button:active {
-  background-color: var(--color-primary-soft);
-  border-color: var(--color-primary-soft);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-ink-invert);
 }
 
 /* Status aktif ditandai warna + bobot + garis (bukan hanya warna). */
@@ -804,7 +1058,6 @@ body::before {
   border-color: var(--color-primary);
   color: var(--color-ink-invert);
   font-weight: 700;
-  box-shadow: inset 0 0 0 2px var(--color-accent);
 }
 
 .category-list button[aria-pressed="true"] .icon {
@@ -812,7 +1065,9 @@ body::before {
 }
 
 .category-list button[aria-pressed="true"]:active {
-  background-color: var(--color-primary-soft);
+  background-color: var(--color-primary-deep);
+  border-color: var(--color-primary-deep);
+  color: var(--color-ink-invert);
 }
 
 
@@ -839,7 +1094,7 @@ body::before {
   min-height: 48px;
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-control);
   background-color: var(--color-surface);
   color: var(--color-ink);
   font-family: var(--font-sans);
@@ -853,6 +1108,25 @@ body::before {
 .search-form input::placeholder {
   color: var(--color-ink-muted);
   opacity: 1;
+}
+
+/* Samakan tombol hapus bawaan WebKit/Blink dengan bahasa visual situs. */
+.search-form input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-form input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: var(--space-2);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23626B63' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6 6 18'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px 14px;
+  cursor: pointer;
 }
 
 .search-form input:hover {
@@ -899,9 +1173,9 @@ body::before {
 .filter-list button {
   min-height: 44px;
   padding: var(--space-2) var(--space-5);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
-  background-color: var(--color-surface);
+  background-color: var(--color-white);
   color: var(--color-primary);
   font-family: var(--font-sans);
   font-size: 0.8125rem;
@@ -913,13 +1187,22 @@ body::before {
 }
 
 .filter-list button:hover {
-  background-color: var(--color-secondary-soft);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-border-strong);
+  color: var(--color-primary-hover);
 }
 
 .filter-list button:active {
-  background-color: var(--color-accent-soft);
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary-hover);
+}
+
+.filter-list button.is-active:active,
+.filter-list button[aria-pressed="true"]:active {
+  background-color: var(--color-primary-deep);
+  border-color: var(--color-primary-deep);
+  color: var(--color-ink-invert);
 }
 
 .filter-list button.is-active,
@@ -928,7 +1211,6 @@ body::before {
   border-color: var(--color-primary);
   color: var(--color-ink-invert);
   font-weight: 700;
-  box-shadow: inset 0 0 0 2px var(--color-accent);
 }
 
 .result-count {
@@ -1006,6 +1288,11 @@ body::before {
   text-align: center;
 }
 
+/* CTA rata tengah, jadi garis aksen di atas judul ikut ditengahkan. */
+.cta > h2:first-of-type::before {
+  margin-inline: auto;
+}
+
 .cta h2 {
   margin-bottom: var(--space-3);
 }
@@ -1022,7 +1309,7 @@ body::before {
 
 .site-footer {
   padding-block: var(--space-7);
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-hover);
   color: var(--color-ink-invert-muted);
   font-size: 0.875rem;
 }
@@ -1046,7 +1333,7 @@ body::before {
   width: 2.5rem;
   height: 3px;
   margin-top: var(--space-3);
-  background-color: var(--color-accent);
+  background-color: var(--color-focus-on-dark);
 }
 
 .footer-nav ul {
@@ -1069,6 +1356,11 @@ body::before {
 
 .footer-nav a:hover {
   color: var(--color-focus-on-dark);
+}
+
+.footer-nav a:active {
+  color: var(--color-ink-invert);
+  text-decoration-color: currentColor;
 }
 
 
@@ -1096,7 +1388,7 @@ body::before {
   aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: var(--radius-card);
-  background-color: var(--color-secondary-soft);
+  background-color: var(--color-media);
   color: var(--color-ink-muted);
   font-size: 0.8125rem;
 }
@@ -1104,6 +1396,8 @@ body::before {
 .destination-hero h1 {
   grid-area: title;
   margin-bottom: 0;
+  font-size: clamp(2.25rem, 2rem + 2vw, 3.5rem);
+  line-height: 1.1;
 }
 
 .destination-location {
@@ -1189,7 +1483,7 @@ body::before {
   height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  background-color: var(--color-secondary-soft);
+  background-color: var(--color-media);
   color: var(--color-ink-muted);
   font-size: 0.8125rem;
   transition: transform var(--transition-slow);
@@ -1224,6 +1518,8 @@ body::before {
 
 .back-link {
   padding-block: var(--space-6) var(--space-7);
+  /* Sejajarkan tautan dengan container section di atasnya. */
+  padding-inline: max(var(--gutter), calc((100% - var(--content-max)) / 2));
 }
 
 .back-link a {
@@ -1235,12 +1531,16 @@ body::before {
   color: var(--color-primary);
 }
 
+.back-link a:active {
+  color: var(--color-primary-deep);
+}
+
 .back-link a .icon {
   transition: transform var(--transition-slow);
 }
 
 .back-link a:hover {
-  color: var(--color-accent);
+  color: var(--color-primary-hover);
 }
 
 .back-link a:hover .icon,
@@ -1277,29 +1577,66 @@ body::before {
 
 /* Elemen disembunyikan HANYA setelah JavaScript memasang `has-js-reveal` pada
    <html>, jadi tanpa JavaScript (atau tanpa IntersectionObserver) konten tetap
-   terlihat. */
+   terlihat. Atribut data-reveal menentukan arah masuk (left/right/up). */
 .has-js-reveal .reveal {
   opacity: 0;
-  translate: 0 14px;
+  translate: 0 12px;
+}
+
+.has-js-reveal .reveal[data-reveal="left"] {
+  translate: -18px 0;
+}
+
+.has-js-reveal .reveal[data-reveal="right"] {
+  translate: 18px 0;
 }
 
 /* Masuk viewport dianimasikan (bukan transisi) supaya properti `transition`
-   dan `transform` milik komponen (mis. kartu yang terangkat saat hover) tidak
-   pernah tertimpa oleh sistem reveal ini. */
+   dan `transform` milik komponen tidak pernah tertimpa oleh sistem reveal ini. */
 .has-js-reveal .reveal.is-visible {
   opacity: 1;
   animation: reveal-in var(--reveal-duration) var(--reveal-ease) both;
   animation-delay: var(--reveal-delay);
 }
 
+.has-js-reveal .reveal[data-reveal="left"].is-visible {
+  animation-name: reveal-in-left;
+}
+
+.has-js-reveal .reveal[data-reveal="right"].is-visible {
+  animation-name: reveal-in-right;
+}
+
 @keyframes reveal-in {
   from {
     opacity: 0;
-    translate: 0 14px;
+    translate: 0 12px;
   }
   to {
     opacity: 1;
-    translate: none;
+    translate: 0 0;
+  }
+}
+
+@keyframes reveal-in-left {
+  from {
+    opacity: 0;
+    translate: -18px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes reveal-in-right {
+  from {
+    opacity: 0;
+    translate: 18px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
   }
 }
 
@@ -1308,15 +1645,30 @@ body::before {
 .card-grid > .reveal:nth-child(3n + 2),
 .gallery > .reveal:nth-child(3n + 2),
 .category-list > .reveal:nth-child(3n + 2),
-.tips-list > .reveal:nth-child(3n + 2) {
+.tips-list > .reveal:nth-child(3n + 2),
+.hero-cards > .reveal:nth-child(3n + 2) {
   --reveal-delay: 60ms;
 }
 
 .card-grid > .reveal:nth-child(3n + 3),
 .gallery > .reveal:nth-child(3n + 3),
 .category-list > .reveal:nth-child(3n + 3),
-.tips-list > .reveal:nth-child(3n + 3) {
+.tips-list > .reveal:nth-child(3n + 3),
+.hero-cards > .reveal:nth-child(3n + 3) {
   --reveal-delay: 120ms;
+}
+
+/* Hero intro masuk berurutan. */
+.hero__intro > .reveal:nth-child(2) {
+  --reveal-delay: 80ms;
+}
+
+.hero__intro > .reveal:nth-child(3) {
+  --reveal-delay: 160ms;
+}
+
+.hero__intro > .reveal:nth-child(4) {
+  --reveal-delay: 240ms;
 }
 
 
@@ -1329,18 +1681,23 @@ body::before {
     --header-height: 4.25rem;
   }
 
-  .hero {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      "title image"
-      "text  image"
-      "cta   image";
-    gap: var(--space-5) var(--space-6);
-    align-items: center;
+  .hero__title {
+    max-width: 21ch;
   }
 
-  .hero h1 {
-    max-width: 15ch;
+  .hero-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    gap: var(--space-3);
+  }
+
+  .hero-cards > li {
+    flex: none;
+  }
+
+  .hero-cards > li:first-child {
+    grid-column: span 2;
   }
 
   .card-grid,
@@ -1381,17 +1738,30 @@ body::before {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  /* Desktop: hero lebih lapang, komposisi tetap terpusat. */
   .hero {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(3rem, 5vw, 4.5rem);
   }
 
-  /* Desktop: tombol menu disembunyikan, navigasi tampil inline. */
+  /* Desktop: tombol menu disembunyikan, navigasi tampil inline dan terpusat. */
   .menu-toggle {
     display: none;
   }
 
+  .site-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .site-logo {
+    justify-self: start;
+  }
+
   .site-nav {
-    padding-right: var(--space-2);
+    justify-self: center;
+    padding-right: 0;
   }
 
   .site-menu {
@@ -1409,7 +1779,8 @@ body::before {
     box-shadow: none;
   }
 
-  .site-menu--open {
+  .site-menu--open,
+  .site-menu--closing {
     display: flex;
     animation: none;
   }
@@ -1424,12 +1795,67 @@ body::before {
   /* Indikator hover sederhana: kapsul hijau muda di dalam navbar kapsul. */
   .site-menu a:hover {
     background-color: var(--color-secondary-soft);
-    color: var(--color-accent);
+    color: var(--color-primary-hover);
   }
 
   .site-menu a:active {
     background-color: var(--color-accent-soft);
-    color: var(--color-primary);
+    color: var(--color-primary-deep);
+  }
+
+  /* Halaman aktif tetap memakai hijau tua saat hover. */
+  .site-menu a[aria-current="page"]:hover {
+    background-color: var(--color-secondary-soft);
+    color: var(--color-primary-hover);
+  }
+
+  /* Hero editorial: komposisi mosaik pada desktop. */
+  .hero-cards {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-auto-rows: 12.5rem;
+    overflow: visible;
+    gap: var(--space-4);
+  }
+
+  /* Kartu kecil cukup label + judul agar slot gambar tetap dominan. */
+  .hero-cards > li:not(:first-child) .hero-card__note {
+    display: none;
+  }
+
+  .hero-cards > li {
+    flex: none;
+  }
+
+  .hero-cards > li:nth-child(1) {
+    grid-column: 1 / span 4;
+    grid-row: 1 / span 2;
+  }
+
+  .hero-cards > li:nth-child(2) {
+    grid-column: 5 / span 3;
+    grid-row: 1;
+  }
+
+  .hero-cards > li:nth-child(3) {
+    grid-column: 8 / span 3;
+    grid-row: 1;
+  }
+
+  .hero-cards > li:nth-child(4) {
+    grid-column: 5 / span 2;
+    grid-row: 2;
+  }
+
+  .hero-cards > li:nth-child(5) {
+    grid-column: 7 / span 4;
+    grid-row: 2;
+  }
+
+  .hero-card__media {
+    height: auto;
+    min-height: 0;
+    flex: 1 1 auto;
   }
 }
 
@@ -1443,8 +1869,10 @@ body::before {
     scroll-behavior: auto;
   }
 
-  /* Konten langsung tampil tanpa animasi. */
-  .has-js-reveal .reveal {
+  /* Konten langsung tampil tanpa animasi — termasuk varian arah kiri/kanan. */
+  .has-js-reveal .reveal,
+  .has-js-reveal .reveal[data-reveal="left"],
+  .has-js-reveal .reveal[data-reveal="right"] {
     opacity: 1;
     translate: none;
     animation: none;
@@ -1472,7 +1900,20 @@ body::before {
   .back-link a:hover .icon,
   .back-link a:focus-visible .icon,
   .destination-card:hover .card-image,
-  .gallery figure:hover img {
+  .gallery figure:hover img,
+  .hero-card:hover .hero-card__media img,
+  .hero-card:focus-visible .hero-card__media img,
+  .hero__secondary-link:hover .icon,
+  .hero__secondary-link:focus-visible .icon {
     transform: none;
+  }
+}
+
+/* Saat gerak dikurangi, panel menu mobile langsung tertutup.
+   Dibatasi ke lebar mobile agar navigasi desktop tidak ikut tersembunyi. */
+@media (prefers-reduced-motion: reduce) and (max-width: 1023px) {
+  .site-menu--closing {
+    display: none;
+    animation: none;
   }
 }
