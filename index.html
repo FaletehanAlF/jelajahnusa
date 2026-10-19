@@ -181,11 +181,39 @@
       </ul>
     </section>
 
-    <!-- ===== 2. Featured Destinations ===== -->
-    <section class="featured" id="featured">
-      <h2>Destinasi Unggulan</h2>
-      <!-- 3 kartu destinasi unggulan dirender oleh js/main.js dari data.js -->
-      <div class="card-grid" id="featured-grid"></div>
+    <!-- ===== 2. Destination Showcase (editorial carousel) ===== -->
+    <section class="showcase" id="featured" aria-labelledby="showcase-title">
+      <div class="showcase__header">
+        <p class="showcase__eyebrow">Jelajahi Indonesia</p>
+        <h2 class="showcase__title" id="showcase-title">Temukan Destinasi Favoritmu</h2>
+        <p class="showcase__description">
+          Dari pesona alam hingga kekayaan budaya, temukan tempat yang membuat setiap perjalanan lebih berkesan.
+        </p>
+      </div>
+
+      <div class="showcase__carousel" role="region" aria-roledescription="carousel" aria-labelledby="showcase-title">
+        <!-- Kartu foto dirender oleh js/main.js dari data.js.
+             Slot gambar AVIF diatur lewat objek SHOWCASE_IMAGES di js/main.js. -->
+        <div class="showcase__viewport" id="showcase-viewport">
+          <ul class="showcase__track" id="featured-grid"></ul>
+        </div>
+
+        <div class="showcase__footer">
+          <div class="showcase__controls">
+            <button type="button" class="showcase__control" id="showcase-prev" aria-label="Destinasi sebelumnya" aria-controls="featured-grid" disabled>
+              <svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M19 12H5M12 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            <button type="button" class="showcase__control" id="showcase-next" aria-label="Destinasi berikutnya" aria-controls="featured-grid">
+              <svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M5 12h14M12 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+          <p class="visually-hidden" id="showcase-status" aria-live="polite"></p>
+        </div>
+      </div>
     </section>
 
     <!-- ===== 3. Explore by Category ===== -->
@@ -267,6 +295,47 @@
       </ul>
     </nav>
   </footer>
+
+  <!-- ===== Destination detail dialog ===== -->
+  <!-- Dirender ulang oleh js/main.js berdasarkan data destinasi yang dipilih. -->
+  <dialog class="detail-dialog" id="destination-dialog" aria-labelledby="destination-dialog-title" aria-describedby="destination-dialog-description">
+    <div class="detail-dialog__panel">
+      <button type="button" class="detail-dialog__close" id="destination-dialog-close" aria-label="Tutup detail destinasi">
+        <svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M6 6 18 18M18 6 6 18"></path>
+        </svg>
+      </button>
+
+      <div class="detail-dialog__scroll">
+        <div class="detail-dialog__media" id="destination-dialog-media"></div>
+
+        <div class="detail-dialog__content">
+          <p class="detail-dialog__eyebrow" id="destination-dialog-category"></p>
+          <h2 class="detail-dialog__title" id="destination-dialog-title"></h2>
+          <p class="detail-dialog__location">
+            <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <path d="M20 10.5c0 5.6-6.1 10.6-8 12.1-1.9-1.5-8-6.5-8-12.1a8 8 0 0 1 16 0Z"></path>
+              <circle cx="12" cy="10.5" r="2.75"></circle>
+            </svg>
+            <span id="destination-dialog-location"></span>
+          </p>
+          <p class="detail-dialog__description" id="destination-dialog-description"></p>
+
+          <div class="detail-dialog__highlights-wrap">
+            <h3>Sorotan</h3>
+            <ul class="detail-dialog__highlights" id="destination-dialog-highlights"></ul>
+          </div>
+
+          <a class="btn btn-primary detail-dialog__cta" id="destination-dialog-link" href="destination.html">
+            Lihat Halaman Destinasi
+            <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <path d="M5 12h14M12 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
 
   <script src="js/data.js"></script>
   <script src="js/main.js"></script>

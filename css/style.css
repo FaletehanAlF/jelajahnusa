@@ -129,6 +129,9 @@ html {
 }
 
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   margin: 0;
   overflow-x: clip;
   background-color: var(--color-bg);
@@ -139,6 +142,11 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   overflow-wrap: break-word;
+}
+
+/* Halaman pendek tetap menempelkan footer ke dasar viewport. */
+main {
+  flex: 1 0 auto;
 }
 
 /* Atribut hidden harus menang atas display komponen. */
@@ -329,9 +337,9 @@ body::before {
   outline-offset: 3px;
 }
 
-/* Di atas latar hijau tua, outline memakai hijau muda (6.47:1). */
-.site-footer :focus-visible,
-.skip-link:focus-visible {
+/* Di atas latar hijau tua footer, outline memakai hijau muda (4.7:1).
+   Skip link tidak termasuk: fokusnya berada di atas latar putih. */
+.site-footer :focus-visible {
   outline-color: var(--color-focus-on-dark);
 }
 
